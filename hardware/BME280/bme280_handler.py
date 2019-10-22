@@ -1,3 +1,4 @@
+# !/usr/bin/env python
 """Module used to read data from BME280 board about temperature, pressure and
 humidity. Requires RPi.bme280 `library
 <https://pypi.org/project/RPi.bme280/>`_.
