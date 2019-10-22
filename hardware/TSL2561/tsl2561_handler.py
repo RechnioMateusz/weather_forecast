@@ -1,3 +1,6 @@
+# !/usr/bin/env python
+"""Module used to read data from BME280 board about light intensity."""
+
 import smbus
 import time
 
@@ -98,23 +101,23 @@ class TSL2561:
             msg="Wrong channel ID", desc=f"{channel_id} doesn't exist"
         )
 
-    def read_channel(self, channel_id):
+    def read_channel(self, channel):
         """Reads value from specified channel, converts it and returns
         it.
 
         **Args**
-            :channel_id: ID of channel to read. [int]
+            :channel: ID of channel to read. [int]
 
         **Returns**
             Converted value readed from specified channel.
         """
 
-        if not isinstance(channel_id, int):
+        if not isinstance(channel, int):
             raise TSL2561Exception(
                 msg="I2C ID is not int", desc=f"It's {type(channel_id)}"
             )
 
-        channel_hex = self.get_channel(channel_id=channel_id)
+        channel_hex = self.get_channel(channel_id=channel)
         data = self._bus.read_i2c_block_data(
             self.ADDRESS,
             channel_hex | self.COMMAND_REGISTER,
@@ -122,13 +125,40 @@ class TSL2561:
         )
         return data[1] * 256 + data[0]
 
+    def read_full_spectrum(self):
+        """Reads full light spectrum.
+
+        **Returns**
+            Full light spectrum value.
+        """
+
+        return self.read_channel(channel=0)
+
+    def read_infrared_light(self):
+        """Reads infrared light.
+
+        **Returns**
+            Infrared light value.
+        """
+
+        return self.read_channel(channel=1)
+
+    def read_visible_light(self):
+        """Reads visible light.
+
+        **Returns**
+            Visible light value.
+        """
+
+        return self.read_channel(channel=0) - self.read_channel(channel=1)
+
 
 if __name__ == "__main__":
     tsl2561 = TSL2561()
     while True:
         time.sleep(.5)
-        ch0 = tsl2561.read_channel(channel_id=0)
-        ch1 = tsl2561.read_channel(channel_id=1)
+        ch0 = tsl2561.read_channel(channel=0)
+        ch1 = tsl2561.read_channel(channel=1)
         print(f"Full Spectrum(IR + Visible) :{ch0} lux")
         print(f"Infrared Value :{ch1} lux")
         print(f"Visible Value :{ch0 - ch1} lux\n")
