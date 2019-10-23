@@ -29,7 +29,7 @@ class MCP3008Exception(Exception):
         return f"Message: {self.msg}\nDescription: {self.desc}"
 
 
-class MCP32008:
+class MCP3008:
     """Class managing communication with MCP3008 A/C converter.
 
     To use it properly::
@@ -50,7 +50,7 @@ class MCP32008:
     RESOLUTION = 1024
 
     def __init__(self, spi_ids=(0, 0)):
-        """Constructor for 'MCP32008' class.
+        """Constructor for 'MCP3008' class.
 
         **Kwargs**
             :spi_ids: IDs of SPI interface. [tuple/list]

@@ -4,7 +4,9 @@ humidity. Requires RPi.bme280 `library
 <https://pypi.org/project/RPi.bme280/>`_.
 """
 
+import logging
 from copy import deepcopy
+
 import smbus2
 import bme280 as bme280_lib
 
@@ -56,10 +58,14 @@ class BME280:
                 desc=f"I2C ID is {i2c_id} of type {type(i2c_id)}"
             )
 
+        self._log = logging.getLogger("BME280")
+        self._log.info("Initializing BME280 Board handler...")
+
         self._bus = smbus2.SMBus(i2c_id)
         self._calibration_params = bme280_lib.load_calibration_params(
             self._bus, self.ADDRESS
         )
+        self._log.info("BME280 Board handler initialized")
 
     @property
     def calibration_params(self):
@@ -69,7 +75,9 @@ class BME280:
             Deep copy of calibration parameters.
         """
 
-        return deepcopy(self._calibration_params)
+        ret = deepcopy(self._calibration_params)
+        self._log.debug(f"Got calibration parameters {ret}")
+        return ret
 
     @property
     def data(self):
@@ -78,16 +86,20 @@ class BME280:
         **Returns**
         """
 
-        return bme280_lib.sample(
+        ret = bme280_lib.sample(
             self._bus, self.ADDRESS, self._calibration_params
         )
+        self._log.debug(f"Got data {ret}")
+        return ret
 
     def reload_calibration_params(self):
         """Reloads calibration parameters."""
 
+        self._log.debug("Reloading calibration parameters...")
         self._calibration_params = bme280_lib.load_calibration_params(
             self._bus, self.ADDRESS
         )
+        self._log.debug("Calibration parameters reloaded")
 
     def read_temperature(self):
         """Reads temperature.
@@ -96,6 +108,7 @@ class BME280:
             Temperature in Celsius.
         """
 
+        self._log.debug("Reading temperature...")
         return self.data.temperature
 
     def read_pressure(self):
@@ -105,6 +118,7 @@ class BME280:
             Pressure in hecto Pascals.
         """
 
+        self._log.debug("Reading pressure...")
         return self.data.pressure
 
     def read_humidity(self):
@@ -114,6 +128,7 @@ class BME280:
             Humidity in percents
         """
 
+        self._log.debug("Reading humidity...")
         return self.data.humidity
 
 

@@ -1,8 +1,10 @@
 # !/usr/bin/env python
 """Module used to read data from BME280 board about light intensity."""
 
-import smbus
 import time
+import logging
+
+import smbus
 
 
 class TSL2561Exception(Exception):
@@ -71,6 +73,9 @@ class TSL2561:
                 desc=f"I2C ID is {i2c_id} of type {type(i2c_id)}"
             )
 
+        self._log = logging.getLogger("TSL2561")
+        self._log.info("Initializing TSL2561 Board handler...")
+
         self._bus = smbus.SMBus(i2c_id)
         self._bus.write_byte_data(
             self.ADDRESS,
@@ -83,6 +88,7 @@ class TSL2561:
             self.INTEGRATION
         )
         time.sleep(.5)
+        self._log.info("TSL2561 Board handler initialized")
 
     def get_channel(self, channel_id):
         """Gets channel of current ID.
@@ -95,7 +101,10 @@ class TSL2561:
         """
 
         if channel_id in self.CHANNELS:
-            return self.CHANNELS.get(channel_id)
+            self._log.debug(f"Getting channel {channel_id}...")
+            ret = self.CHANNELS.get(channel_id)
+            self._log.debug(f"Got {ret}")
+            return ret
 
         raise TSL2561Exception(
             msg="Wrong channel ID", desc=f"{channel_id} doesn't exist"
@@ -117,13 +126,17 @@ class TSL2561:
                 msg="I2C ID is not int", desc=f"It's {type(channel_id)}"
             )
 
+        self._log.debug(f"Reading data from channel {channel}")
         channel_hex = self.get_channel(channel_id=channel)
         data = self._bus.read_i2c_block_data(
             self.ADDRESS,
             channel_hex | self.COMMAND_REGISTER,
             2
         )
-        return data[1] * 256 + data[0]
+
+        ret = data[1] * 256 + data[0]
+        self._log.debug(f"Got raw data {data}\tGot real data {ret}")
+        return ret
 
     def read_full_spectrum(self):
         """Reads full light spectrum.
@@ -132,6 +145,7 @@ class TSL2561:
             Full light spectrum value.
         """
 
+        self._log.debug("Reading full light spectrum...")
         return self.read_channel(channel=0)
 
     def read_infrared_light(self):
@@ -141,6 +155,7 @@ class TSL2561:
             Infrared light value.
         """
 
+        self._log.debug("Reading infrared light...")
         return self.read_channel(channel=1)
 
     def read_visible_light(self):
@@ -150,6 +165,7 @@ class TSL2561:
             Visible light value.
         """
 
+        self._log.debug("Reading visible light...")
         return self.read_channel(channel=0) - self.read_channel(channel=1)
 
 
