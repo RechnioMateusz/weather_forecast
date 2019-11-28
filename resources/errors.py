@@ -33,3 +33,7 @@ class FactoryException(AbstractException):
 
 class UtilsException(AbstractException):
     """Exception for utilities."""
+
+
+class ReaderException(AbstractException):
+    """Exception for 'Reader' class"""
